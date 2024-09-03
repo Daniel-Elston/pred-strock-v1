@@ -1,50 +1,67 @@
 from __future__ import annotations
 
-import json
+import asyncio
 import logging
-import time
 
-import requests
-from requests.auth import HTTPDigestAuth
+import ccxt.pro as ccxtpro
 
 from config.state_init import StateManager
+from utils.execution import TaskExecutor
+from utils.file_access import save_json, temp_file_reset
 
 
 class RequestData:
     def __init__(self, state: StateManager):
-        self.api_config = state.api_config
-        self.creds = state.api_config.api_creds
-        self.params = state.api_config.api_params
+        self.state = state
+        self.save_path = self.state.paths.get_path("response")
 
-    def make_request(self, endpoint, params=None):
-        url = f"{self.params['BASE_URL']}/{endpoint}"
-        logging.debug(f"FULL URL: {url}?{params}")
+    def pipeline(self, df):
+        steps = [
+            self.handle,
+        ]
+        for step in steps:
+            df = TaskExecutor.run_child_step(step, df)
+        return df
 
-        try:
-            logging.debug("Attempting request...")
-            response = requests.get(
-                url, params, auth=HTTPDigestAuth(self.creds["USERNAME"], self.creds["PASSWORD"])
-            )
-            if response.status_code == 200:
-                logging.debug(f"SUCCESSFUL Request: {response.status_code}")
-                return response.json()
-            if response.status_code == 429:
-                logging.error(
-                    f"API limit reached ERROR: {response.status_code}, Sleeping for {self.api_config.sleep_interval} seconds..."
-                )
-                time.sleep(int(self.api_config.sleep_interval))
-                return None
-            else:
-                logging.error(f"ERROR: {response.status_code}, {response.text}")
-                return None
-        except requests.RequestException as e:
-            logging.error(f"Request failed: {e}")
-            return None
+    async def ticker(self, symbol="BTC/USDT", exchange_name="binance", batch_size=2, max_items=4):
+        """Watch the ticker for a specific symbol."""
+        await temp_file_reset(self.save_path)
+        batch = []
 
-    def main(self, endpoint, params):
-        try:
-            response = self.make_request(endpoint, json.dumps(params) if params else None)
-            # self.file_handler.save_json(response, Path(f'{self.save_path}/{filename}.json'))
-        except Exception as e:
-            logging.error(f"Error: {e}")
-        return response
+        # Use context manager to ensure exchange closes properly
+        async with getattr(ccxtpro, exchange_name)() as exchange:
+            try:
+                while len(batch) < max_items:
+                    ticker = await exchange.fetch_ticker(symbol)
+                    batch.append(ticker)
+
+                    if len(batch) % batch_size == 0 or len(batch) >= max_items:
+                        logging.debug(f"Saving batch of size {len(batch)} to: {self.save_path}")
+                        await save_json(batch, self.save_path)
+
+                    await asyncio.sleep(1)
+
+            except ccxtpro.NetworkError as e:
+                logging.error(f"NetworkError: {e}")
+            except ccxtpro.ExchangeError as e:
+                logging.error(f"ExchangeError: {e}")
+            except Exception as e:
+                logging.error(f"An unexpected error occurred: {e}")
+            finally:
+                # Ensure last partial batch is saved
+                if batch:
+                    logging.debug(f"Saving final batch to: {self.save_path}")
+                    await save_json(batch, self.save_path)
+
+    async def async_extract(
+        self, symbol="BTC/USDT", exchange_name="binance", batch_size=2, max_items=4
+    ):
+        await self.ticker(symbol, exchange_name, batch_size, max_items)
+
+    def handle(self, *args, **kwargs):
+        symbol = kwargs.get("symbol", "BTC/USDT")
+        exchange_name = kwargs.get("exchange_name", "binance")
+        batch_size = kwargs.get("batch_size", 2)
+        max_items = kwargs.get("max_items", 4)
+
+        asyncio.run(self.async_extract(symbol, exchange_name, batch_size, max_items))

@@ -40,7 +40,7 @@ class TaskExecutor:
             if isinstance(load_path, (str, Path)):
                 load_path = self.paths.get_path(load_path)
                 with FileAccess.load_file(load_path) as df:
-                    df = df
+                    df = df  # Loaded data
             else:
                 pass
 
@@ -60,11 +60,23 @@ class TaskExecutor:
 
         logged_step = log_step(load_path, save_paths)(step)
         result = (
-            logged_step(df, *args, **kwargs) if df is not None else logged_step(*args, **kwargs)
+            logged_step(df, *args, **kwargs) if load_path else logged_step(df, *args, **kwargs)
         )
 
-        for path in save_paths:
-            FileAccess.save_file(result, path, self.data_config.overwrite)
+        if save_paths is not None:
+            if isinstance(save_paths, (str, Path)):
+                save_paths = [self.paths.get_path(save_paths)]
+            if isinstance(save_paths, list):
+                save_paths = [self.paths.get_path(path) for path in save_paths]
+
+            if isinstance(result, tuple) and len(result) == 2:
+                for df, path in zip(result, save_paths):
+                    FileAccess.save_file(df, path, self.data_config.overwrite)
+            elif isinstance(result, pd.DataFrame):
+                FileAccess.save_file(result, save_paths[0], self.data_config.overwrite)
+            elif isinstance(result, (list, dict)):
+                FileAccess.save_json(result, save_paths[0], self.data_config.overwrite)
+
         return result
 
     @staticmethod

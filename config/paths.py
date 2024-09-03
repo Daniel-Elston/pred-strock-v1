@@ -6,14 +6,7 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 paths_store = {
-    "external": Path("data/external/"),
-    "interim": Path("data/interim/"),
-    "features1": Path("data/processed/"),
-    "process1": Path("data/processed/"),
-    "raw": Path("data/raw/uber.csv"),
-    "frames": Path("data/result_frames/"),
-    "sdo": Path("data/sdo/uber.parquet"),
-    "load": Path("data/db/load/uber.csv"),
+    "response": Path("data/api/request/tmp-raw.json"),
 }
 
 
