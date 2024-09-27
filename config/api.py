@@ -26,7 +26,7 @@ class ApiConfig:
     symbol: str = "BTC/USDT"
     exchange_name: str = "binance"
     batch_size: int = 2
-    max_items: int = 4
+    max_items: int = 6
 
     def __post_init__(self):
         self.api_creds, self.api_params = auth_manager()

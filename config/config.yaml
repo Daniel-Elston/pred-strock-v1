@@ -6,10 +6,6 @@
 logging:
   root_level: DEBUG
   file_level: DEBUG
-<<<<<<< HEAD
   console_level: DEBUG
-=======
-  console_level: INFO
->>>>>>> 9589f0df0ac95942337e101a24e1d5af30d28c1d
 
 ##########################################################################################
