@@ -22,14 +22,11 @@ class ApiConfig:
     sleep_interval: int = 60
     api_creds: dict = field(init=False)
     api_params: dict = field(init=False)
-<<<<<<< HEAD
     
     symbol: str = "BTC/USDT"
     exchange_name: str = "binance"
     batch_size: int = 2
     max_items: int = 4
-=======
->>>>>>> 9589f0df0ac95942337e101a24e1d5af30d28c1d
 
     def __post_init__(self):
         self.api_creds, self.api_params = auth_manager()

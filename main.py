@@ -17,11 +17,7 @@ class MainPipeline:
 
         self.api_pipeline = RequestPipeline(self.state, self.exe)
         # self.data_pipeline = DataPipeline(self.state, self.exe)
-<<<<<<< HEAD
         self.database_pipeline = DatabasePipeline(self.state, self.exe, stage="raw")
-=======
-        # self.database_pipeline = DatabasePipeline(self.state, self.exe, stage="raw")
->>>>>>> 9589f0df0ac95942337e101a24e1d5af30d28c1d
 
     def run(self):
         logging.info(
