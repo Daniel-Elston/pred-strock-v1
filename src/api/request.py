@@ -61,7 +61,12 @@ class RequestData:
     def handle(self, *args, **kwargs):
         symbol = kwargs.get("symbol", "BTC/USDT")
         exchange_name = kwargs.get("exchange_name", "binance")
+<<<<<<< HEAD
         batch_size = kwargs.get("batch_size", 60)
         max_items = kwargs.get("max_items", 10*60)
+=======
+        batch_size = kwargs.get("batch_size", 2)
+        max_items = kwargs.get("max_items", 4)
+>>>>>>> 9589f0df0ac95942337e101a24e1d5af30d28c1d
 
         asyncio.run(self.async_extract(symbol, exchange_name, batch_size, max_items))
