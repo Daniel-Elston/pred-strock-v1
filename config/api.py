@@ -27,6 +27,12 @@ class ApiConfig:
     exchange_name: str = "binance"
     batch_size: int = 2
     max_items: int = 6
+    fetch_historical: bool = True
+    date_from = 1704067200000
+    
+    since: str = '15/10/2024'
+    limit: int = 1000
+
 
     def __post_init__(self):
         self.api_creds, self.api_params = auth_manager()

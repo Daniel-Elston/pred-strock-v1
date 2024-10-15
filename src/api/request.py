@@ -8,16 +8,19 @@ import ccxt.pro as ccxtpro
 from config.state_init import StateManager
 from utils.execution import TaskExecutor
 from utils.file_access import save_json, temp_file_reset
+from pathlib import Path
 
 
 class RequestData:
     def __init__(self, state: StateManager):
         self.state = state
+        self.s_ac = state.api_config
         self.symbol = state.api_config.symbol
         self.exchange_name = state.api_config.exchange_name
         self.batch_size = state.api_config.batch_size
         self.max_items = state.api_config.max_items
         self.save_path = self.state.paths.get_path("response")
+        self.historical_save_path = self.state.paths.get_path("historical")
 
     def pipeline(self, df):
         steps = [
@@ -28,7 +31,7 @@ class RequestData:
         return df
 
     # async def ticker(self, symbol="BTC/USDT", exchange_name="binance", batch_size=2, max_items=4):
-    async def ticker(self, symbol, exchange_name, batch_size, max_items):
+    async def ticker(self, symbol:str, exchange_name:str, batch_size:int, max_items:int):
         """Watch the ticker for a specific symbol."""
         await temp_file_reset(self.save_path)
         batch = []
@@ -58,8 +61,8 @@ class RequestData:
                     logging.debug(f"Saving final batch to: {self.save_path}")
                     await save_json(batch, self.save_path)
 
-    async def async_extract(self):
+    async def async_extract_live(self):
         await self.ticker(self.symbol, self.exchange_name, self.batch_size, self.max_items)
 
-    def handle(self, df):
-        asyncio.run(self.async_extract())
+    def run_async_extract_live(self, _):
+        asyncio.run(self.async_extract_live())
