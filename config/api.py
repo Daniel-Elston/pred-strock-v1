@@ -23,7 +23,8 @@ class ApiConfig:
     api_creds: dict = field(init=False)
     api_params: dict = field(init=False)
     
-    symbol: str = "BTC/USDT"
+    symbol: str = "BTC"
+    currency: str = "USDT"
     exchange_name: str = "binance"
     batch_size: int = 2
     max_items: int = 6
@@ -44,3 +45,10 @@ class ApiConfig:
 
     def __repr__(self):
         return pformat(self.__dict__)
+
+
+# BTC and NVDA/AMD - companies produce GPUs used in crypto mining
+# ETH and MSF - Ethereum-based projects and blockchain developmen
+# SOL and general tech companies - high-performance blockchain, Solana's performance can be indicative of overall tech sector health
+# Cardano (ADA) and tech innovation: Its development is closely watched as an indicator of blockchain technology advancement.
+# Block (SQ) directly deals with Bitcoin transactions and holdings, making it closely tied to crypto markets.

@@ -7,7 +7,9 @@ from typing import Dict, Optional, Union
 
 paths_store = {
     "response": Path("data/api/request/tmp-raw.json"),
-    "historical": Path("data/api/request/historical.json"),
+    "BTC": Path("data/api/request/BTC.json"),
+    "ETH": Path("data/api/request/ETH.json"),
+    # "historical": Path("data/api/request/historical.json"),
 }
 
 
