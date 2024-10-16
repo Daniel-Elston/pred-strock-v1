@@ -19,9 +19,10 @@ def auth_manager():
 
 @dataclass
 class ApiConfig:
-    sleep_interval: int = 60
+    # alpha_api_key: str = os.getenv("ALPHA_API_KEY")
     api_creds: dict = field(init=False)
     api_params: dict = field(init=False)
+    sleep_interval: int = 60
     
     symbol: str = "BTC"
     currency: str = "USDT"

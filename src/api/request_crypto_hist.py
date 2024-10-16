@@ -10,7 +10,7 @@ from utils.execution import TaskExecutor
 from utils.file_access import save_json, temp_file_reset
 from pathlib import Path
 
-class RequestHistoricalData:
+class RequestHistoricalCrypto:
     def __init__(self, state: StateManager):
         api_conf = state.api_config
         self.exchange_name = api_conf.exchange_name
