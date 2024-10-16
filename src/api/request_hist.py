@@ -12,12 +12,14 @@ from pathlib import Path
 
 class RequestHistoricalData:
     def __init__(self, state: StateManager):
+        api_conf = state.api_config
         self.historical_save_path = state.paths.get_path("historical")
-        self.exchange_name = state.api_config.exchange_name
-        self.symbol = state.api_config.symbol
-        self.fetch_historical = state.api_config.fetch_historical
-        self.since = state.api_config.since
-        self.limit = state.api_config.limit
+        self.exchange_name = api_conf.exchange_name
+        self.symbol = api_conf.symbol
+        self.timeframe = api_conf.timeframe
+        self.since = api_conf.since
+        self.limit = api_conf.limit
+
 
     def pipeline(self, df):
         steps = [
@@ -27,7 +29,7 @@ class RequestHistoricalData:
             df = TaskExecutor.run_child_step(step, df)
         return df
 
-    async def fetch_historical_data(self, historical_save_path:Path, exchange_name:str, symbol:str, since:str, limit:int=1000):
+    async def fetch_historical_data(self, historical_save_path:Path, exchange_name:str, symbol:str, timeframe:str, since:str, limit:int=1000):
         """Fetch historical OHLCV data."""
         exchange = getattr(ccxtpro, exchange_name)()
         await temp_file_reset(historical_save_path)
@@ -38,7 +40,7 @@ class RequestHistoricalData:
             
             while True:
                 logging.debug(f"Fetching historical data for {symbol} starting from {since}")
-                ohlcv = await exchange.fetch_ohlcv(symbol, timeframe='1m', since=since_timestamp, limit=limit)
+                ohlcv = await exchange.fetch_ohlcv(symbol, timeframe='15m', since=since_timestamp, limit=limit)
                 
                 if not ohlcv:
                     break
@@ -65,7 +67,7 @@ class RequestHistoricalData:
             await exchange.close()
 
     async def async_extract_historical(self):
-        await self.fetch_historical_data(self.historical_save_path, self.exchange_name, self.symbol, self.since, self.limit)
+        await self.fetch_historical_data(self.historical_save_path, self.exchange_name, self.symbol, self.timeframe, self.since, self.limit)
 
     def run_historical_data_fetch(self, _):
         asyncio.run(self.async_extract_historical())

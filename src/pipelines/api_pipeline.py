@@ -15,7 +15,7 @@ class RequestPipeline:
     def main(self):
         steps = [
             # (RequestData(self.state).pipeline, None, self.save_path),
-            (RequestHistoricalData(self.state).pipeline, None, self.save_path),
+            (RequestHistoricalData(self.state).pipeline, None, 'historical'),
         ]
         for step, load_path, save_paths in steps:
             self.exe.run_parent_step(step, load_path, save_paths)

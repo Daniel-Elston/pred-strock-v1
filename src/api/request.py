@@ -13,18 +13,17 @@ from pathlib import Path
 
 class RequestData:
     def __init__(self, state: StateManager):
-        self.state = state
-        self.s_ac = state.api_config
-        self.symbol = state.api_config.symbol
-        self.exchange_name = state.api_config.exchange_name
-        self.batch_size = state.api_config.batch_size
-        self.max_items = state.api_config.max_items
-        self.save_path = self.state.paths.get_path("response")
-        self.historical_save_path = self.state.paths.get_path("historical")
+        api_conf = state.api_config
+        self.save_path = state.paths.get_path("response")
+        self.historical_save_path = state.paths.get_path("historical")
+        self.symbol = api_conf.symbol
+        self.exchange_name = api_conf.exchange_name
+        self.batch_size = api_conf.batch_size
+        self.max_items = api_conf.max_items
 
     def pipeline(self, df):
         steps = [
-            self.handle,
+            self.run_async_extract_live,
         ]
         for step in steps:
             df = TaskExecutor.run_child_step(step, df)
