@@ -59,12 +59,13 @@ def setup_logging(name, project_dir, log_file_name, config):
             'detailed': {
                 'format': '%(levelname)s - %(pathname)s - %(asctime)s - %(filename)s'
                           ' - %(lineno)d - %(module)s - %(name)s - %(funcName)s - %(message)s',
-                'datefmt': '%Y-%m-%d %H:%M:%S',
+                'datefmt': '%H:%M:%S',
             },
             'color': {
                 '()': HighlightColoredFormatter,
-                'format': '%(log_color)s%(asctime)s - %(levelname)s - %(message)s',
-                'datefmt': '%Y-%m-%d %H:%M:%S',
+                'format': '%(log_color)s%(asctime)s - %(module)s - %(levelname)s - %(message)s',
+                # 'datefmt': '%Y-%m-%d %H:%M:%S',
+                'datefmt': '%H:%M:%S',
                 'log_colors': {
                     'DEBUG': 'cyan',
                     'INFO': 'green',

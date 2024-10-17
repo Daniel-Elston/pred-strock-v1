@@ -6,28 +6,47 @@ from dataclasses import dataclass, field
 from pprint import pformat
 
 
+def api_auth():
+    auth_creds = {
+        "stock_api_key": os.getenv("ALPHA_VANTAGE_API")
+    }
+    return auth_creds
+
+
 @dataclass
 class ApiConfig:
-    # alpha_api_key: str = os.getenv("ALPHA_API_KEY")
     sleep_interval: int = 60
     
-    symbol: str = "BTC"
+    # Cross Configs
+    interval: str = '60m'
+    
+    # Stock Config
+    auth_creds: dict = field(init=False)
+    base_url: str = "https://www.alphavantage.co/query"
+    outputsize: str = 'full'  # 'compact' or 'full'
+    function: str = 'TIME_SERIES_DAILY'
+    stock_symbol: str = 'NVDA'
+    
+    # Crypto Config
+    crypto_symbol: str = "BTC"
     currency: str = "USDT"
     exchange_name: str = "binance"
     batch_size: int = 2
     max_items: int = 6
-    
-    timeframe: str = '15m'
     since: str = '15/10/2024'
     limit: int = 1000
 
 
+
     def __post_init__(self):
+        self.auth_creds = api_auth()
         post_init_dict = self.__dict__
         
         # Remove fields that are not initialized yet
         post_init_dict = {k: v for k, v in post_init_dict.items() if v is not None}
-        logging.debug(f"Initialized API ConnConfig:\n{pformat(post_init_dict)}")
+        
+        post_init_dict['ALPHA_VANTAGE_API'] = os.getenv("ALPHA_VANTAGE_API")
+        logging.warning(f"Initialized API ConnConfig:\n{pformat(post_init_dict)}")
 
     def __repr__(self):
         return pformat(self.__dict__)

@@ -14,12 +14,12 @@ class RequestHistoricalCrypto:
     def __init__(self, state: StateManager):
         api_conf = state.api_config
         self.exchange_name = api_conf.exchange_name
-        self.symbol = api_conf.symbol
+        self.crypto_symbol = api_conf.crypto_symbol
         self.currency = api_conf.currency
-        self.timeframe = api_conf.timeframe
+        self.interval = api_conf.interval
         self.since = api_conf.since
         self.limit = api_conf.limit
-        self.historical_save_path = state.paths.get_path(api_conf.symbol)
+        self.historical_save_path = state.paths.get_path(api_conf.crypto_symbol)
 
 
     def pipeline(self, df):
@@ -30,9 +30,17 @@ class RequestHistoricalCrypto:
             df = TaskExecutor.run_child_step(step, df)
         return df
 
+    def run_historical_data_fetch(self, _):
+        asyncio.run(self.async_extract_historical())
+        
+    async def async_extract_historical(self):
+        await self.fetch_historical_data(
+            self.historical_save_path, self.exchange_name, self.crypto_symbol,
+            self.currency, self.interval, self.since, self.limit)
+
     async def fetch_historical_data(
-        self, historical_save_path:Path, exchange_name:str, symbol:str, currency:str,
-        timeframe:str, since:str, limit:int=1000):
+        self, historical_save_path:Path, exchange_name:str, crypto_symbol:str,
+        currency:str, interval:str, since:str, limit:int=1000):
         """Fetch historical OHLCV data."""
         exchange = getattr(ccxtpro, exchange_name)()
         await temp_file_reset(historical_save_path)
@@ -42,9 +50,9 @@ class RequestHistoricalCrypto:
             all_data = []
             
             while True:
-                logging.debug(f"Fetching historical data for {symbol}/{currency} starting from {since}")
+                logging.debug(f"Fetching historical data for {crypto_symbol}/{currency} starting from {since}")
                 ohlcv = await exchange.fetch_ohlcv(
-                    f'{symbol}/{currency}', timeframe, since=since_timestamp, limit=limit)
+                    f'{crypto_symbol}/{currency}', interval, since=since_timestamp, limit=limit)
                 
                 if not ohlcv:
                     break
@@ -61,8 +69,6 @@ class RequestHistoricalCrypto:
                 logging.debug(f"Saving final historical batch to: {historical_save_path}")
                 await save_json(all_data, historical_save_path)
 
-        except ccxtpro.NetworkError as e:
-            logging.error(f"NetworkError: {e}")
         except ccxtpro.ExchangeError as e:
             logging.error(f"ExchangeError: {e}")
         except Exception as e:
@@ -70,10 +76,10 @@ class RequestHistoricalCrypto:
         finally:
             await exchange.close()
 
-    async def async_extract_historical(self):
-        await self.fetch_historical_data(
-            self.historical_save_path, self.exchange_name, self.symbol,
-            self.currency, self.timeframe, self.since, self.limit)
+    # async def async_extract_historical(self):
+    #     await self.fetch_historical_data(
+    #         self.historical_save_path, self.exchange_name, self.crypto_symbol,
+    #         self.currency, self.interval, self.since, self.limit)
 
-    def run_historical_data_fetch(self, _):
-        asyncio.run(self.async_extract_historical())
+    # def run_historical_data_fetch(self, _):
+    #     asyncio.run(self.async_extract_historical())

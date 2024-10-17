@@ -15,7 +15,7 @@ class MainPipeline:
         self.state = state
         self.exe = exe
 
-        self.api_pipeline = RequestPipeline(self.state, self.exe)
+        self.api_pipeline = RequestPipeline(self.state, self.exe) # Think this can be removed, or method implemented
         # self.data_pipeline = DataPipeline(self.state, self.exe)
         self.database_pipeline = DatabasePipeline(self.state, self.exe, stage="raw")
 
@@ -38,4 +38,4 @@ if __name__ == "__main__":
     try:
         MainPipeline(state_manager, exe).run()
     except Exception as e:
-        logging.error(f"Pipeline terminated due to unexpected error: {e}", exc_info=True)
+        logging.error(f"Pipeline terminated due to unexpected error: {e}", exc_info=False)
