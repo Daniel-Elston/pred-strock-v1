@@ -48,7 +48,7 @@ class DatabaseConfig:
             "schema": self.schema,
             "table": self.table,
         }
-        logging.debug(f"Initialized DatabaseConfig:\n{pformat(post_init_dict)}")
+        # logging.debug(f"Initialized DatabaseConfig:\n{pformat(post_init_dict)}")
 
     def __repr__(self):
         return pformat(self.__dict__)

@@ -21,7 +21,6 @@ class RequestHistoricalCrypto:
         self.limit = api_conf.limit
         self.historical_save_path = state.paths.get_path(api_conf.crypto_symbol)
 
-
     def pipeline(self, df):
         steps = [
             self.run_historical_data_fetch,
@@ -58,7 +57,7 @@ class RequestHistoricalCrypto:
                     break
                 
                 all_data.extend(ohlcv)
-                since_timestamp = ohlcv[-1][0] + 60000  # Move the time forward to fetch the next batch
+                since_timestamp = ohlcv[-1][0] + 60000  # Move time forward to fetch next batch
 
                 if len(all_data) >= limit:
                     logging.debug(f"Saving batch of historical data to: {historical_save_path}")
@@ -69,17 +68,7 @@ class RequestHistoricalCrypto:
                 logging.debug(f"Saving final historical batch to: {historical_save_path}")
                 await save_json(all_data, historical_save_path)
 
-        except ccxtpro.ExchangeError as e:
-            logging.error(f"ExchangeError: {e}")
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}")
         finally:
             await exchange.close()
-
-    # async def async_extract_historical(self):
-    #     await self.fetch_historical_data(
-    #         self.historical_save_path, self.exchange_name, self.crypto_symbol,
-    #         self.currency, self.interval, self.since, self.limit)
-
-    # def run_historical_data_fetch(self, _):
-    #     asyncio.run(self.async_extract_historical())

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging
+# import logging
 import os
 from dataclasses import dataclass, field
 from pprint import pformat
@@ -15,19 +15,20 @@ def api_auth():
 
 @dataclass
 class ApiConfig:
+    market: str = 'stock'
     sleep_interval: int = 60
     
     # Cross Configs
-    interval: str = '60m'
+    interval: str = '15m'
     
-    # Stock Config
+    # Stock Market Config
     auth_creds: dict = field(init=False)
     base_url: str = "https://www.alphavantage.co/query"
     outputsize: str = 'full'  # 'compact' or 'full'
     function: str = 'TIME_SERIES_DAILY'
     stock_symbol: str = 'NVDA'
     
-    # Crypto Config
+    # Crypto Market Config
     crypto_symbol: str = "BTC"
     currency: str = "USDT"
     exchange_name: str = "binance"
@@ -35,7 +36,6 @@ class ApiConfig:
     max_items: int = 6
     since: str = '15/10/2024'
     limit: int = 1000
-
 
 
     def __post_init__(self):
@@ -46,10 +46,20 @@ class ApiConfig:
         post_init_dict = {k: v for k, v in post_init_dict.items() if v is not None}
         
         post_init_dict['ALPHA_VANTAGE_API'] = os.getenv("ALPHA_VANTAGE_API")
-        logging.warning(f"Initialized API ConnConfig:\n{pformat(post_init_dict)}")
+        # logging.debug(f"Initialized API ConnConfig:\n{pformat(post_init_dict)}")
 
     def __repr__(self):
         return pformat(self.__dict__)
+
+    @property
+    def symbol(self):
+        """Dynamically return the correct symbol based on request type."""
+        if self.market=='crypto':
+            return self.crypto_symbol
+        elif self.market=='stock':
+            return self.stock_symbol
+        else:
+            raise ValueError(f"Invalid market: {self.market}. Please select either 'crypto' or 'stock'")
 
 
 # BTC and NVDA/AMD - companies produce GPUs used in crypto mining

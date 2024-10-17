@@ -4,8 +4,8 @@ import logging
 
 from config.state_init import StateManager
 from src.pipelines.api_pipeline import RequestPipeline
-from src.pipelines.data_pipeline import DataPipeline
-from src.pipelines.db_pipeline import DatabasePipeline
+# from src.pipelines.data_pipeline import DataPipeline
+# from src.pipelines.db_pipeline import DatabasePipeline
 from utils.execution import TaskExecutor
 from utils.project_setup import init_project
 
@@ -14,19 +14,14 @@ class MainPipeline:
     def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
-
-        self.api_pipeline = RequestPipeline(self.state, self.exe) # Think this can be removed, or method implemented
-        # self.data_pipeline = DataPipeline(self.state, self.exe)
-        self.database_pipeline = DatabasePipeline(self.state, self.exe, stage="raw")
+        self.save_path = state.api_config.symbol
 
     def run(self):
         logging.info(
             f"INITIATING {self.__class__.__name__} from top-level script: ``{__file__.split('/')[-1]}``...\n"
         )
         steps = [
-            # (self.data_pipeline.main, 'raw', 'sdo'),
-            # (self.database_pipeline.insert_load, 'raw', None),
-            (RequestPipeline(self.state, self.exe).main, None, 'response'),
+            (RequestPipeline(self.state, self.exe).main, None, self.save_path),
         ]
         self.exe._execute_steps(steps, stage="main")
         logging.info(
