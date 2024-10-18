@@ -15,7 +15,7 @@ def api_auth():
 
 @dataclass
 class ApiConfig:
-    market: str = 'stock'
+    market: str = 'crypto'
     sleep_interval: int = 60
     
     # Cross Configs
@@ -53,6 +53,16 @@ class ApiConfig:
 
     @property
     def symbol(self):
+        """Dynamically return the correct symbol based on request type."""
+        if self.market=='crypto':
+            return self.crypto_symbol
+        elif self.market=='stock':
+            return self.stock_symbol
+        else:
+            raise ValueError(f"Invalid market: {self.market}. Please select either 'crypto' or 'stock'")
+
+    @property
+    def method(self):
         """Dynamically return the correct symbol based on request type."""
         if self.market=='crypto':
             return self.crypto_symbol

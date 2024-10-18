@@ -14,12 +14,12 @@ from pathlib import Path
 class RequestData:
     def __init__(self, state: StateManager):
         api_conf = state.api_config
-        self.save_path = state.paths.get_path("response")
-        self.historical_save_path = state.paths.get_path("historical")
         self.symbol = api_conf.symbol
         self.exchange_name = api_conf.exchange_name
         self.batch_size = api_conf.batch_size
         self.max_items = api_conf.max_items
+        self.currency = api_conf.currency
+        self.live_save_path = state.paths.get_path("response")
 
     def pipeline(self, df):
         steps = [
@@ -34,22 +34,26 @@ class RequestData:
         
     async def async_extract_live(self):
         await self.ticker(
-            self.exchange_name, self.symbol, self.batch_size, self.max_items)
+            self.live_save_path, self.exchange_name, self.symbol, 
+            self.currency, self.batch_size, self.max_items)
 
-    async def ticker(self, exchange_name:str, symbol:str, batch_size:int, max_items:int):
+    async def ticker(
+        self, live_save_path: Path, exchange_name:str, symbol:str,
+        currency:str, batch_size:int, max_items:int):
         """Watch the ticker for a specific symbol."""
-        await temp_file_reset(self.save_path)
+        await temp_file_reset(live_save_path)
         batch = []
 
         async with getattr(ccxtpro, exchange_name)() as exchange:
             try:
                 while len(batch) < max_items:
-                    ticker = await exchange.fetch_ticker(symbol)
+                    ticker_symbol = f'{symbol}/{currency}'
+                    ticker = await exchange.fetch_ticker(ticker_symbol)
                     batch.append(ticker)
 
                     if len(batch) % batch_size == 0 or len(batch) >= max_items:
-                        logging.debug(f"Saving batch of size {len(batch)} to: {self.save_path}")
-                        await save_json(batch, self.save_path)
+                        logging.debug(f"Saving batch of size {len(batch)} to: {live_save_path}")
+                        await save_json(batch, live_save_path)
 
                     await asyncio.sleep(1)
 
@@ -58,5 +62,5 @@ class RequestData:
             finally:
                 # Ensure last partial batch is saved
                 if batch:
-                    logging.debug(f"Saving final batch to: {self.save_path}")
-                    await save_json(batch, self.save_path)
+                    logging.debug(f"Saving final batch to: {live_save_path}")
+                    await save_json(batch, live_save_path)

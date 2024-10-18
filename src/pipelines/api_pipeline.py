@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from config.state_init import StateManager
-# from src.api.request_crypto_live import RequestData
+from src.api.request_crypto_live import RequestData
 from src.api.request_crypto_hist import RequestHistoricalCrypto
 from src.api.request_stock_hist import RequestHistoricalStock
 from utils.execution import TaskExecutor
@@ -15,7 +15,7 @@ class RequestPipeline:
 
     def main(self):
         steps = [
-            # (RequestData(self.state).pipeline, None, self.save_path),
+            (RequestData(self.state).pipeline, None, 'response'),
             (RequestHistoricalCrypto(self.state).pipeline, None, self.symbol),
             (RequestHistoricalStock(self.state).pipeline, None, self.symbol),
         ]
