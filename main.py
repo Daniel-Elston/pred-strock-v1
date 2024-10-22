@@ -3,18 +3,15 @@ from __future__ import annotations
 import logging
 
 from config.state_init import StateManager
-from src.pipelines.api_pipeline import RequestPipeline
-# from src.pipelines.data_pipeline import DataPipeline
-# from src.pipelines.db_pipeline import DatabasePipeline
 from utils.execution import TaskExecutor
 from utils.project_setup import init_project
-
+from src.pipelines.api_pipeline import RequestPipeline
 
 class MainPipeline:
     def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
-        self.save_path = state.api_config.symbol
+        self.save_path = state.api_config.data_market
 
     def run(self):
         logging.info(

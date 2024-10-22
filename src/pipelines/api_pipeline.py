@@ -1,9 +1,7 @@
 from __future__ import annotations
 
+from src.api.request_factory import RequestFactory
 from config.state_init import StateManager
-from src.api.request_crypto_live import RequestLiveCrypto
-from src.api.request_crypto_hist import RequestHistoricalCrypto
-from src.api.request_stock_hist import RequestHistoricalStock
 from utils.execution import TaskExecutor
 
 
@@ -11,14 +9,15 @@ class RequestPipeline:
     def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
-        self.symbol = state.api_config.symbol
+        self.market = state.api_config.market
+        self.mode = state.api_config.mode
 
     def main(self):
+        """
+        Main entry point for the pipeline.
+        """
         steps = [
-            (RequestLiveCrypto(self.state).pipeline, None, 'response'),
-            
-            (RequestHistoricalCrypto(self.state).pipeline, None, self.symbol),
-            (RequestHistoricalStock(self.state).pipeline, None, self.symbol),
+            (RequestFactory(self.state, self.exe).create_market_request(), None, 'response'),
         ]
         for step, load_path, save_paths in steps:
             self.exe.run_parent_step(step, load_path, save_paths)

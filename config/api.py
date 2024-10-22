@@ -5,18 +5,16 @@ import os
 from dataclasses import dataclass, field
 from pprint import pformat
 
-
 def api_auth():
     auth_creds = {
         "stock_api_key": os.getenv("ALPHA_VANTAGE_API")
     }
     return auth_creds
 
-
 @dataclass
 class ApiConfig:
-    mode: str = 'live' # 'live' or 'historical'
-    market: str = 'crypto' # 'crypto' or 'stock'
+    market: str = 'crypto'  # 'crypto' or 'stock'
+    mode: str = 'live'  # 'live' or 'historical'
     sleep_interval: int = 60
     
     # Cross Configs
@@ -37,7 +35,6 @@ class ApiConfig:
     max_items: int = 6
     since: str = '15/10/2024'
     limit: int = 1000
-
 
     def __post_init__(self):
         self.auth_creds = api_auth()
@@ -61,22 +58,6 @@ class ApiConfig:
             return self.stock_symbol
         else:
             raise ValueError(f"Invalid market: {self.market}. Please select either 'crypto' or 'stock'")
-
-    @property
-    def data_mode(self):
-        """Dynamically return the correct data scope based on request type."""
-        if self.mode == 'live':
-            return self.live_data
-        elif self.mode == 'historical':
-            return self.historical_data
-        else:
-            raise ValueError(f"Invalid data type: {self.mode}. Please select either 'live' or 'historical'")
-
-
-    @property
-    def request_description(self) -> str:
-        """Provides a brief description of the request."""
-        return f"Requesting {self.mode} data for {self.symbol} in the {self.market} market."
 
 # BTC and NVDA/AMD - companies produce GPUs used in crypto mining
 # ETH and MSF - Ethereum-based projects and blockchain developmen
