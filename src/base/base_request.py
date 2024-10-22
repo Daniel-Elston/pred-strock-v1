@@ -12,9 +12,9 @@ class BaseMarketRequest(ABC):
     """
     def __init__(self, state: StateManager):
         self.api_conf = state.api_config
-        self.save_path = state.paths.get_path(self.api_conf.data_market)
         self.symbol = self.api_conf.data_market
         self.mode = self.api_conf.mode
+        self.save_path = state.paths.get_path(self.api_conf.data_market)
 
     @abstractmethod
     async def fetch_data(self):
