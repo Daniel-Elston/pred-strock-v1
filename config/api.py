@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-# import logging
+import logging
 import os
 from dataclasses import dataclass, field
 from pprint import pformat
@@ -15,7 +15,8 @@ def api_auth():
 
 @dataclass
 class ApiConfig:
-    market: str = 'crypto'
+    mode: str = 'live' # 'live' or 'historical'
+    market: str = 'crypto' # 'crypto' or 'stock'
     sleep_interval: int = 60
     
     # Cross Configs
@@ -46,13 +47,13 @@ class ApiConfig:
         post_init_dict = {k: v for k, v in post_init_dict.items() if v is not None}
         
         post_init_dict['ALPHA_VANTAGE_API'] = os.getenv("ALPHA_VANTAGE_API")
-        # logging.debug(f"Initialized API ConnConfig:\n{pformat(post_init_dict)}")
+        logging.debug(f"Initialized API ConnConfig:\n{pformat(post_init_dict)}")
 
     def __repr__(self):
         return pformat(self.__dict__)
 
     @property
-    def symbol(self):
+    def data_market(self):
         """Dynamically return the correct symbol based on request type."""
         if self.market=='crypto':
             return self.crypto_symbol
@@ -62,15 +63,20 @@ class ApiConfig:
             raise ValueError(f"Invalid market: {self.market}. Please select either 'crypto' or 'stock'")
 
     @property
-    def method(self):
-        """Dynamically return the correct symbol based on request type."""
-        if self.market=='crypto':
-            return self.crypto_symbol
-        elif self.market=='stock':
-            return self.stock_symbol
+    def data_mode(self):
+        """Dynamically return the correct data scope based on request type."""
+        if self.mode == 'live':
+            return self.live_data
+        elif self.mode == 'historical':
+            return self.historical_data
         else:
-            raise ValueError(f"Invalid market: {self.market}. Please select either 'crypto' or 'stock'")
+            raise ValueError(f"Invalid data type: {self.mode}. Please select either 'live' or 'historical'")
 
+
+    @property
+    def request_description(self) -> str:
+        """Provides a brief description of the request."""
+        return f"Requesting {self.mode} data for {self.symbol} in the {self.market} market."
 
 # BTC and NVDA/AMD - companies produce GPUs used in crypto mining
 # ETH and MSF - Ethereum-based projects and blockchain developmen

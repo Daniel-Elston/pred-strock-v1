@@ -11,7 +11,7 @@ from utils.file_access import save_json, temp_file_reset
 from pathlib import Path
 
 
-class RequestData:
+class RequestLiveCrypto:
     def __init__(self, state: StateManager):
         api_conf = state.api_config
         self.symbol = api_conf.symbol
