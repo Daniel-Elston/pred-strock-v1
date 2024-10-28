@@ -17,15 +17,13 @@ class RequestFactory:
         self.mode = state.api_config.mode
 
     def create_market_request(self):
-        if self.market == 'crypto':
-            if self.mode == 'live':
-                return RequestLiveCrypto(self.state).pipeline
-            elif self.mode == 'historical':
-                return RequestHistoricalCrypto(self.state).pipeline
-        elif self.market == 'stock':
-            if self.mode == 'live':
-                return RequestLiveStock(self.state).pipeline
-            elif self.mode == 'historical':
-                return RequestHistoricalStock(self.state).pipeline
+        if self.market == 'crypto' and self.mode == 'live':
+            return RequestLiveCrypto(self.state).pipeline
+        elif self.market == 'crypto' and self.mode == 'historical':
+            return RequestHistoricalCrypto(self.state).pipeline
+        elif self.market == 'stock' and self.mode == 'live':
+            return RequestLiveStock(self.state).pipeline
+        elif self.market == 'stock' and self.mode == 'historical':
+            return RequestHistoricalStock(self.state).pipeline
         
         raise ValueError(f"Invalid market or mode: {self.market}, {self.mode}")

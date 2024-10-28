@@ -76,7 +76,10 @@ class RequestHistoricalCrypto(BaseCryptoRequest):
             while True:
                 logging.debug(f"Fetching historical data for {crypto_symbol}/{currency} starting from {since}")
                 ohlcv = await exchange.fetch_ohlcv(
-                    f'{crypto_symbol}/{currency}', interval, since=since_timestamp, limit=limit)
+                    f'{crypto_symbol}/{currency}',
+                    interval,
+                    since=since_timestamp,
+                    limit=limit)
                 
                 if not ohlcv:
                     break
