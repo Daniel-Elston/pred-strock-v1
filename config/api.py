@@ -1,66 +1,74 @@
 from __future__ import annotations
 
-import logging
-import os
 from dataclasses import dataclass, field
+import os
 from pprint import pformat
+import logging
 
 def api_auth():
-    auth_creds = {
-        "stock_api_key": os.getenv("ALPHA_VANTAGE_API")
-    }
-    return auth_creds
+    """Load API authentication credentials from environment variables."""
+    return {"stock_api_key": os.getenv("ALPHA_VANTAGE_API")}
 
 @dataclass
 class ApiConfig:
-    market: str = 'crypto'  # 'crypto' or 'stock'
+    """
+    General API configuration class. Loads market-specific configurations based on the market and mode.
+    """
+    market: str = 'stock'  # 'crypto' or 'stock'
     mode: str = 'historical'  # 'live' or 'historical'
     sleep_interval: int = 60
-    
-    # Cross Configs
-    interval: str = '15m'
-    
-    # Stock Market Config
     auth_creds: dict = field(init=False)
-    base_url: str = "https://www.alphavantage.co/query"
-    outputsize: str = 'full'  # 'compact' or 'full'
-    function: str = 'TIME_SERIES_DAILY'
-    stock_symbol: str = 'NVDA'
     
-    # Crypto Market Config
-    crypto_symbol: str = "BTC"
+    def __post_init__(self):
+        self.auth_creds = api_auth()
+        logging.debug(f"Initialised general config {self.__class__.__name__}:\n{pformat(self.__dict__)}")
+
+    def load_config(self):
+        """Dynamically load the appropriate configuration based on market and mode."""
+        if self.market == 'crypto':
+            return CryptoConfig(mode=self.mode)
+        elif self.market == 'stock':
+            return StockConfig(mode=self.mode, auth_creds=self.auth_creds)
+        else:
+            raise ValueError(f"Invalid market: {self.market}. Please choose 'crypto' or 'stock'.")
+
+@dataclass
+class CryptoConfig:
+    """Configuration for crypto market requests."""
+    mode: str
+    symbol: str = "BTC"
     currency: str = "USDT"
     exchange_name: str = "binance"
-    batch_size: int = 4
+    interval: str = '15m'
+    batch_size: int = 2
     max_items: int = 6
-    since: str = '27/10/2024'
+    since: str = '25/10/2024'
     limit: int = 1000
 
     def __post_init__(self):
-        self.auth_creds = api_auth()
-        post_init_dict = self.__dict__
-        
-        # Remove fields that are not initialized yet
-        post_init_dict = {k: v for k, v in post_init_dict.items() if v is not None}
-        
-        post_init_dict['ALPHA_VANTAGE_API'] = os.getenv("ALPHA_VANTAGE_API")
-        logging.debug(f"Initialized API ConnConfig:\n{pformat(post_init_dict)}")
+        if self.mode == 'historical':
+            self.interval = '30m'  # Override default interval for historical mode
+        logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}")
 
-    def __repr__(self):
-        return pformat(self.__dict__)
 
-    @property
-    def data_market(self):
-        """Dynamically return the correct symbol based on request type."""
-        if self.market=='crypto':
-            return self.crypto_symbol
-        elif self.market=='stock':
-            return self.stock_symbol
-        else:
-            raise ValueError(f"Invalid market: {self.market}. Please select either 'crypto' or 'stock'")
+@dataclass
+class StockConfig:
+    """Configuration for stock market requests, including API-specific parameters."""
+    mode: str
+    auth_creds: dict
+    symbol: str = 'NVDA'
+    base_url: str = "https://www.alphavantage.co/query"
+    function: str = field(init=False)
+    interval: str = "15m"
+    outputsize: str = 'full'
 
-# BTC and NVDA/AMD - companies produce GPUs used in crypto mining
-# ETH and MSF - Ethereum-based projects and blockchain developmen
-# SOL and general tech companies - high-performance blockchain, Solana's performance can be indicative of overall tech sector health
-# Cardano (ADA) and tech innovation: Its development is closely watched as an indicator of blockchain technology advancement.
-# Block (SQ) directly deals with Bitcoin transactions and holdings, making it closely tied to crypto markets.
+    def __post_init__(self):
+        # Set function based on mode
+        if self.mode == 'live':
+            self.function = "TIME_SERIES_INTRADAY"
+            self.interval = "15m"
+            self.outputsize = "compact"
+        elif self.mode == 'historical':
+            self.function = "TIME_SERIES_DAILY"
+            self.outputsize = "full"
+        logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}")

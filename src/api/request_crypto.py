@@ -12,10 +12,13 @@ from src.base.base_request import BaseCryptoRequest
 
 from datetime import datetime
 
+from config.api import CryptoConfig
+
+
 class RequestLiveCrypto(BaseCryptoRequest):
-    def __init__(self, state: StateManager):
-        super().__init__(state)
-        self.batch_size = self.api_conf.batch_size
+    def __init__(self, state: StateManager, config: CryptoConfig):
+        super().__init__(state, config)
+        self.batch_size = self.config.batch_size
 
     async def fetch_data(self):
         """
@@ -38,11 +41,11 @@ class RequestLiveCrypto(BaseCryptoRequest):
 
 
 class RequestHistoricalCrypto(BaseCryptoRequest):
-    def __init__(self, state: StateManager):
-        super().__init__(state)
-        self.interval = self.api_conf.interval
-        self.since = self.api_conf.since
-        self.limit = self.api_conf.limit
+    def __init__(self, state: StateManager, config: CryptoConfig):
+        super().__init__(state, config)
+        self.interval = self.config.interval
+        self.since = self.config.since
+        self.limit = self.config.limit
 
     async def fetch_data(self):
         """

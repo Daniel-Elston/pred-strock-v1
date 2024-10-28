@@ -7,16 +7,20 @@ from pathlib import Path
 from config.state_init import StateManager
 from utils.execution import TaskExecutor
 import aiohttp
+from typing import Union
+from config.api import CryptoConfig, StockConfig
+
 
 class BaseMarketRequest(ABC):
     """
     Base class for all market requests
     """
-    def __init__(self, state: StateManager):
-        self.api_conf = state.api_config
-        self.symbol = self.api_conf.data_market
-        self.mode = self.api_conf.mode
-        self.save_path = state.paths.get_path(self.api_conf.data_market)
+    def __init__(self, state: StateManager, market_config: Union[CryptoConfig, StockConfig]):
+        self.state = state
+        self.config = market_config
+        self.symbol = self.config.symbol
+        self.mode = self.config.mode
+        self.save_path = state.paths.get_path(self.symbol)
 
     @abstractmethod
     async def fetch_data(self):
@@ -34,14 +38,15 @@ class BaseMarketRequest(ABC):
     def run_data_fetch(self, _):
         asyncio.run(self.fetch_data())
 
+
 class BaseCryptoRequest(BaseMarketRequest):
     """
     Base class for all crypto requests
     """
-    def __init__(self, state: StateManager):
-        super().__init__(state)
-        self.exchange_name = self.api_conf.exchange_name
-        self.currency = self.api_conf.currency
+    def __init__(self, state: StateManager, config: CryptoConfig):
+        super().__init__(state, config)
+        self.exchange_name = self.config.exchange_name
+        self.currency = self.config.currency
 
     async def batch_save_helper(self, batch, path: Path):
         """Helper method to save batch data conditionally."""
@@ -49,17 +54,18 @@ class BaseCryptoRequest(BaseMarketRequest):
         await save_json(batch, path)
         batch.clear()
 
+
 class BaseStockRequest(BaseMarketRequest):
     """
     Base class for all stock requests
     """
-    def __init__(self, state: StateManager):
-        super().__init__(state)
-        self.api_key = self.api_conf.auth_creds['stock_api_key']
-        self.base_url = self.api_conf.base_url
-        self.function = self.api_conf.function
-        self.outputsize = self.api_conf.outputsize
-        self.interval = self.api_conf.interval
+    def __init__(self, state: StateManager, config: StockConfig):
+        super().__init__(state, config)
+        self.api_key = self.config.auth_creds['stock_api_key']
+        self.base_url = self.config.base_url
+        self.function = self.config.function
+        self.outputsize = self.config.outputsize
+        self.interval = self.config.interval
 
     async def perform_request(self):
         """

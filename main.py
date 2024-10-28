@@ -5,25 +5,22 @@ import logging
 from config.state_init import StateManager
 from utils.execution import TaskExecutor
 from utils.project_setup import init_project
-from src.pipelines.api_pipeline import RequestPipeline
+from src.pipelines.request_pipeline import RequestPipeline
+
 
 class MainPipeline:
     def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
-        self.save_path = state.api_config.data_market
+        self.market_config = self.state.api_config.load_config()  # Load the specific market configuration
+        
+        self.save_path = state.paths.get_path(self.market_config.symbol)
 
     def run(self):
-        logging.info(
-            f"INITIATING {self.__class__.__name__} from top-level script: ``{__file__.split('/')[-1]}``...\n"
-        )
         steps = [
-            (RequestPipeline(self.state, self.exe).main, None, self.save_path),
+            (RequestPipeline(self.state, self.exe, self.market_config).main, None, self.save_path),
         ]
         self.exe._execute_steps(steps, stage="main")
-        logging.info(
-            f'Completed {self.__class__.__name__} from top-level script: ``{__file__.split("/")[-1]}`` SUCCESSFULLY.\n'
-        )
 
 if __name__ == "__main__":
     project_dir, project_config, state_manager, exe = init_project()
