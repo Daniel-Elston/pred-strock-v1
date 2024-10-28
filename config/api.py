@@ -14,7 +14,7 @@ def api_auth():
 @dataclass
 class ApiConfig:
     market: str = 'crypto'  # 'crypto' or 'stock'
-    mode: str = 'live'  # 'live' or 'historical'
+    mode: str = 'historical'  # 'live' or 'historical'
     sleep_interval: int = 60
     
     # Cross Configs
@@ -31,9 +31,9 @@ class ApiConfig:
     crypto_symbol: str = "BTC"
     currency: str = "USDT"
     exchange_name: str = "binance"
-    batch_size: int = 2
+    batch_size: int = 4
     max_items: int = 6
-    since: str = '15/10/2024'
+    since: str = '27/10/2024'
     limit: int = 1000
 
     def __post_init__(self):
