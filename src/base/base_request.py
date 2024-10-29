@@ -15,9 +15,9 @@ class BaseMarketRequest(ABC):
     """
     Base class for all market requests
     """
-    def __init__(self, state: StateManager, market_config: Union[CryptoConfig, StockConfig]):
+    def __init__(self, state: StateManager, config: Union[CryptoConfig, StockConfig]):
         self.state = state
-        self.config = market_config
+        self.config = config
         self.symbol = self.config.symbol
         self.mode = self.config.mode
         self.save_path = state.paths.get_path(f'{self.config.symbol}_{self.config.mode}')

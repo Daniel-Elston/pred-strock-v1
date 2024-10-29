@@ -12,7 +12,7 @@ class MainPipeline:
     def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
-        self.market_config = self.state.api_config.load_config()  # Load the specific market configuration
+        self.market_config = self.state.api_config.load_config()
         
         self.save_path = state.paths.get_path(f'{self.market_config.symbol}_{self.market_config.mode}')
 
