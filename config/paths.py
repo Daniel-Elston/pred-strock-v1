@@ -6,10 +6,10 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 paths_store = {
-    "response": Path("data/request/live/tmp-raw.json"),
-    "BTC": Path("data/request/live/BTC.json"),
-    "ETH": Path("data/request/live/ETH.json"),
-    "NVDA": Path("data/request/live//NVDA.json"),
+    "BTC_live": Path("data/request/live/BTC.json"),
+    "BTC_historical": Path("data/request/historical/BTC.json"),
+    "NVDA_live": Path("data/request/live//NVDA.json"),
+    "NVDA_historical": Path("data/request/historical//NVDA.json"),
 }
 
 

@@ -15,7 +15,7 @@ class RequestPipeline:
         
         self.market = self.api_config.market
         self.mode = self.api_config.mode
-        self.save_path = state.paths.get_path(self.market_config.symbol)
+        self.save_path = state.paths.get_path(f'{self.market_config.symbol}_{self.market_config.mode}')
 
     def main(self):
         """

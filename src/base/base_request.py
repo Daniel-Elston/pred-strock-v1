@@ -20,7 +20,7 @@ class BaseMarketRequest(ABC):
         self.config = market_config
         self.symbol = self.config.symbol
         self.mode = self.config.mode
-        self.save_path = state.paths.get_path(self.symbol)
+        self.save_path = state.paths.get_path(f'{self.config.symbol}_{self.config.mode}')
 
     @abstractmethod
     async def fetch_data(self):

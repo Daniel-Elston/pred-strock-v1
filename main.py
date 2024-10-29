@@ -14,7 +14,7 @@ class MainPipeline:
         self.exe = exe
         self.market_config = self.state.api_config.load_config()  # Load the specific market configuration
         
-        self.save_path = state.paths.get_path(self.market_config.symbol)
+        self.save_path = state.paths.get_path(f'{self.market_config.symbol}_{self.market_config.mode}')
 
     def run(self):
         steps = [

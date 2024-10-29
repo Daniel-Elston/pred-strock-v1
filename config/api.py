@@ -47,7 +47,7 @@ class CryptoConfig:
 
     def __post_init__(self):
         if self.mode == 'historical':
-            self.interval = '30m'  # Override default interval for historical mode
+            self.interval = '30m'
         logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}")
 
 
@@ -59,14 +59,14 @@ class StockConfig:
     symbol: str = 'NVDA'
     base_url: str = "https://www.alphavantage.co/query"
     function: str = field(init=False)
-    interval: str = "15m"
+    interval: str = "15min"
     outputsize: str = 'full'
 
     def __post_init__(self):
         # Set function based on mode
         if self.mode == 'live':
             self.function = "TIME_SERIES_INTRADAY"
-            self.interval = "15m"
+            self.interval = "1min"
             self.outputsize = "compact"
         elif self.mode == 'historical':
             self.function = "TIME_SERIES_DAILY"
