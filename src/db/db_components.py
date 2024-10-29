@@ -76,6 +76,7 @@ class DatabaseOperations:
 
     def create_table_if_not_exists(self, df: pd.DataFrame) -> None:
         """Create table if it does not exist."""
+        print(self.table)
         conn = self.connection.pool.getconn()
         try:
             cur = conn.cursor()

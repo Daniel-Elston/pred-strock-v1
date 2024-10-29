@@ -30,4 +30,4 @@ class RequestFactory:
         elif self.market == 'stock' and self.mode == 'historical':
             return RequestHistoricalStock(self.state, config=self.market_config).pipeline
         
-        raise ValueError(f"Invalid market or mode: {self.market}, {self.mode}")
+        raise ValueError(f"Invalid market or mode: {self.market}, {self.mode}.")

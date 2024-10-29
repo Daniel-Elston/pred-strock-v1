@@ -14,29 +14,30 @@ class ApiConfig:
     """
     General API configuration class. Loads market-specific configurations based on the market and mode.
     """
-    market: str = 'stock'  # 'crypto' or 'stock'
-    mode: str = 'historical'  # 'live' or 'historical'
-    sleep_interval: int = 60
     auth_creds: dict = field(init=False)
+    symbol: str = 'BTC'
+    market: str = 'crypto'  # 'crypto' or 'stock'
+    mode: str = 'live'  # 'live' or 'historical'
+    sleep_interval: int = 60
     
     def __post_init__(self):
         self.auth_creds = api_auth()
-        logging.debug(f"Initialised general config {self.__class__.__name__}:\n{pformat(self.__dict__)}")
+        logging.debug(f"Initialised general config {self.__class__.__name__}:\n{pformat(self.__dict__)}\n")
 
     def load_config(self):
         """Dynamically load the appropriate configuration based on market and mode."""
         if self.market == 'crypto':
             return CryptoConfig(mode=self.mode)
         elif self.market == 'stock':
-            return StockConfig(mode=self.mode, auth_creds=self.auth_creds)
+            return StockConfig(mode=self.mode)#, auth_creds=self.auth_creds)
         else:
             raise ValueError(f"Invalid market: {self.market}. Please choose 'crypto' or 'stock'.")
 
 @dataclass
-class CryptoConfig:
+class CryptoConfig(ApiConfig):
     """Configuration for crypto market requests."""
     mode: str
-    symbol: str = "BTC"
+    symbol: str
     currency: str = "USDT"
     exchange_name: str = "binance"
     interval: str = '15m'
@@ -48,15 +49,15 @@ class CryptoConfig:
     def __post_init__(self):
         if self.mode == 'historical':
             self.interval = '30m'
-        logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}")
+        logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}\n")
 
 
 @dataclass
-class StockConfig:
+class StockConfig(ApiConfig):
     """Configuration for stock market requests, including API-specific parameters."""
-    mode: str
     auth_creds: dict
-    symbol: str = 'NVDA'
+    mode: str
+    symbol: str
     base_url: str = "https://www.alphavantage.co/query"
     function: str = field(init=False)
     interval: str = "15min"
@@ -71,4 +72,4 @@ class StockConfig:
         elif self.mode == 'historical':
             self.function = "TIME_SERIES_DAILY"
             self.outputsize = "full"
-        logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}")
+        logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}\n")
