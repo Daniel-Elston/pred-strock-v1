@@ -13,33 +13,9 @@ class DatabasePipeline:
         self.state = state
         self.exe = exe
         
-        # self.stage = state.db_config.stage
-        self.stage = stage
-        self.market = state.api_config.market
-        self.mode = state.api_config.mode
-        self.symbol = state.api_config.symbol
-        
-        self.db_ops = self.state.db_manager.ops
-        self.data_handler = self.state.db_manager.handler
-
-        self.load_path, self.save_paths = DatabaseFactory(self.state, self.stage).create_paths()
+        self.db_factory = DatabaseFactory(self.state, stage)
+        self.load_path, self.save_paths = self.db_factory.create_paths()
+        self.steps = self.db_factory.create_steps()
 
     def extract_load(self):
-        steps = [
-            (self._create_table, self.load_path, None),
-            (self._insert_data, self.load_path, None),
-            # (self._fetch_data, None, self.save_paths),
-        ]
-        self.exe._execute_steps(steps, stage="parent")
-
-    def _create_table(self, df):
-        self.db_ops.create_table_if_not_exists(df)
-        return df
-
-    def _insert_data(self, df):
-        self.data_handler.insert_batches_to_db(df)
-        return df
-
-    def _fetch_data(self):
-        query = f"SELECT * FROM {self.state.db_manager.config.schema}.{self.state.db_config.table};"
-        return self.data_handler.fetch_data(query)
+        self.exe._execute_steps(self.steps, stage="parent")
