@@ -98,6 +98,7 @@ class TaskExecutor:
             return step(df, **kwargs) if kwargs is not None else step(df)
 
     def _execute_steps(self, steps, stage=None):
+        sep = "=" * 125
         if stage == "main":
             for step, load_path, save_paths in steps:
                 logging.info(
@@ -106,7 +107,7 @@ class TaskExecutor:
                     f"    Output_paths: {self.paths.get_path(save_paths)}\n"
                 )
                 self.run_main_step(step, load_path, save_paths)
-                logging.info(f"{step.__self__.__class__.__name__} completed SUCCESSFULLY.\n")
+                logging.info(f"{step.__self__.__class__.__name__} completed SUCCESSFULLY.\n{sep}")
         if stage == "parent":
             for step, load_path, save_paths in steps:
                 self.run_parent_step(step, load_path, save_paths)

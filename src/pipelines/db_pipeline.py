@@ -17,5 +17,5 @@ class DatabasePipeline:
         self.load_path, self.save_paths = self.db_factory.create_paths()
         self.steps = self.db_factory.create_steps()
 
-    def extract_load(self):
+    def load_fetch(self):
         self.exe._execute_steps(self.steps, stage="parent")

@@ -15,9 +15,9 @@ class ApiConfig:
     General API configuration class. Loads market-specific configurations based on the market and mode.
     """
     auth_creds: dict = field(init=False)
-    symbol: str = 'BTC'
-    market: str = 'crypto'  # 'crypto' or 'stock'
-    mode: str = 'live'  # 'live' or 'historical'
+    symbol: str = 'NVDA'
+    market: str = 'stock'  # 'crypto' or 'stock'
+    mode: str = 'historical'  # 'live' or 'historical'
     sleep_interval: int = 60
     
     def __post_init__(self):
@@ -29,7 +29,7 @@ class ApiConfig:
         if self.market == 'crypto':
             return CryptoConfig(mode=self.mode)
         elif self.market == 'stock':
-            return StockConfig(mode=self.mode)#, auth_creds=self.auth_creds)
+            return StockConfig(mode=self.mode)
         else:
             raise ValueError(f"Invalid market: {self.market}. Please choose 'crypto' or 'stock'.")
 

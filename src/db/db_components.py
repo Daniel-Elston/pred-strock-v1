@@ -43,7 +43,9 @@ class DatabaseConnection:
 
     def log_database_info(self):
         """Log connection and database information."""
+        sep = "=" * 125
         conn = self.pool.getconn()
+        table_store = []
         try:
             cur = conn.cursor()
             cur.execute("SELECT current_database();")
@@ -53,9 +55,10 @@ class DatabaseConnection:
             )
             tables = cur.fetchall()
             logging.info(f"Connected to database: {db_name}")
-            logging.info("Tables in the database:")
+            logging.info("Tables in the database (schema, table):")
             for schema, table in tables:
-                logging.info(f"Schema: {schema}, Table: {table}\n")
+                table_store.append((schema, table))
+            logging.info(f"{table_store}\n\n")
         except (Exception, psycopg2.DatabaseError) as error:
             logging.error(f"Failed to fetch database information: {error}")
         finally:
@@ -76,7 +79,6 @@ class DatabaseOperations:
 
     def create_table_if_not_exists(self, df: pd.DataFrame) -> None:
         """Create table if it does not exist."""
-        print(self.table)
         conn = self.connection.pool.getconn()
         try:
             cur = conn.cursor()
