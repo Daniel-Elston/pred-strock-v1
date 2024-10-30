@@ -15,8 +15,8 @@ class ApiConfig:
     General API configuration class. Loads market-specific configurations based on the market and mode.
     """
     auth_creds: dict = field(init=False)
-    symbol: str = 'BTC'
-    market: str = 'crypto'  # 'crypto' or 'stock'
+    symbol: str = 'NVDA'
+    market: str = 'stock'  # 'crypto' or 'stock'
     mode: str = 'live'  # 'live' or 'historical'
     sleep_interval: int = 60
     
@@ -55,21 +55,23 @@ class CryptoConfig(ApiConfig):
 @dataclass
 class StockConfig(ApiConfig):
     """Configuration for stock market requests, including API-specific parameters."""
-    auth_creds: dict
+    # auth_creds: dict
     mode: str
     symbol: str
+    auth_creds: dict = field(init=False)
     base_url: str = "https://www.alphavantage.co/query"
     function: str = field(init=False)
     interval: str = "15min"
-    outputsize: str = 'full'
+    outputsize: str = 'compact'
 
     def __post_init__(self):
         # Set function based on mode
+        self.auth_creds = api_auth()
         if self.mode == 'live':
             self.function = "TIME_SERIES_INTRADAY"
             self.interval = "1min"
             self.outputsize = "compact"
         elif self.mode == 'historical':
             self.function = "TIME_SERIES_DAILY"
-            self.outputsize = "full"
+            self.outputsize = "compact"
         logging.debug(f"Initialised market config {self.__class__.__name__}:\n{pformat(self.__dict__)}\n")

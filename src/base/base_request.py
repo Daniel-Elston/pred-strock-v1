@@ -19,7 +19,6 @@ class BaseMarketRequest(ABC):
         self.state = state
         self.config = config
         self.symbol = state.api_config.symbol
-        print(self.symbol)
         self.mode = self.config.mode
         self.save_path = state.paths.get_path(f'{self.config.symbol}_{self.config.mode}')
 

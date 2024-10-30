@@ -10,6 +10,16 @@ paths_store = {
     "BTC_historical": Path("data/request/historical/BTC.json"),
     "NVDA_live": Path("data/request/live//NVDA.json"),
     "NVDA_historical": Path("data/request/historical//NVDA.json"),
+    
+    'BTC_live_transform': Path("data/processed/BTC_live_transform.csv"),
+    'BTC_historical_transform': Path("data/processed/BTC_historical_transform.csv"),#
+    'NVDA_live_transform': Path("data/processed/NVDA_live_transform.csv"),
+    'NVDA_historical_transform': Path("data/processed/NVDA_historical_transform.csv"),
+    
+    'sdo': Path("data/sdo/tmp.csv"),
+    'sdo2': Path("data/sdo/tmp2.csv"),
+    'sdo3': Path("data/sdo/tmp3.csv"),
+    'sdo4': Path("data/sdo/tmp4.csv"),
 }
 
 
