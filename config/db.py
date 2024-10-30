@@ -51,10 +51,10 @@ class DatabaseConfig(ApiConfig):
     def create_table_config(self):
         """Dynamically create table name based on stage"""
         if self.stage == 'load1':
-            table_name = f'{self.symbol}_{self.mode}_extract'
+            table_name = f'{self.symbol}_{self.mode}_transform'
             return table_name.lower()
         elif self.stage == 'load2':
-            table_name = f'{self.symbol}_{self.mode}_transform'
+            table_name = f'{self.symbol}_{self.mode}_fetch'
             return table_name.lower()
         else:
             raise ValueError(f"Invalid stage: {self.stage}. Expected 'load1' or 'load2'.")

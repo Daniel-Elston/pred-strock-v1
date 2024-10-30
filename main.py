@@ -23,8 +23,8 @@ class MainPipeline:
     def run(self):
         steps = [
             # (RequestPipeline(self.state, self.exe, self.market_config).main, None, self.extract_path),
-            (DataPipeline(self.state, self.exe).main, self.extract_path, self.transform_path),
-            # (DatabasePipeline(self.state, self.exe, self.market_config, self.db_stage).extract_load, self.save_path, None),
+            # (DataPipeline(self.state, self.exe).main, self.extract_path, self.transform_path),
+            (DatabasePipeline(self.state, self.exe, self.db_stage).extract_load, self.transform_path, None),
         ]
         self.exe._execute_steps(steps, stage="main")
 

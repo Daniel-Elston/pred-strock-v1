@@ -15,8 +15,8 @@ class ApiConfig:
     General API configuration class. Loads market-specific configurations based on the market and mode.
     """
     auth_creds: dict = field(init=False)
-    symbol: str = 'NVDA'
-    market: str = 'stock'  # 'crypto' or 'stock'
+    symbol: str = 'BTC'
+    market: str = 'crypto'  # 'crypto' or 'stock'
     mode: str = 'live'  # 'live' or 'historical'
     sleep_interval: int = 60
     
