@@ -9,11 +9,12 @@ class DatabasePipeline:
     """
     ELTL or ETL pipeline for database operations.
     """
-    def __init__(self, state: StateManager, exe: TaskExecutor, stage: str):
+    def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
+        self.db_stage = self.state.db_config.stage
         
-        self.db_factory = DatabaseFactory(self.state, stage)
+        self.db_factory = DatabaseFactory(self.state, self.db_stage)
         self.load_path, self.save_paths = self.db_factory.create_paths()
         self.steps = self.db_factory.create_steps()
 

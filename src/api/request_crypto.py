@@ -12,28 +12,20 @@ from src.base.base_request import BaseCryptoRequest
 
 from datetime import datetime
 
-from config.api import CryptoConfig
+from config.api import RequestParams
+from pprint import pprint
 
 
 class RequestLiveCrypto(BaseCryptoRequest):
-    def __init__(self, state: StateManager, config: CryptoConfig):
-        super().__init__(state, config)
-        self.batch_size = self.config.batch_size
+    def __init__(self, state: StateManager, params: RequestParams):
+        super().__init__(state, params)
 
     async def fetch_data(self):
-        """
-        Params:
-            save_path: Path
-            exchange_name: str
-            symbol: str
-            currency: str
-            batch_size: int
-        """
         await temp_file_reset(self.save_path)
         batch = []
-        async with getattr(ccxtpro, self.exchange_name)() as exchange:
-            while len(batch) < self.batch_size:
-                ticker_symbol = f'{self.symbol}/{self.currency}'
+        async with getattr(ccxtpro, self.params.exchange_name)() as exchange:
+            while len(batch) < self.params.batch_size:
+                ticker_symbol = f'{self.params.symbol}/{self.params.currency}'
                 ticker = await exchange.fetch_ticker(ticker_symbol)
                 batch.append(ticker)
             await self.batch_save_helper(batch, self.save_path)
@@ -41,36 +33,23 @@ class RequestLiveCrypto(BaseCryptoRequest):
 
 
 class RequestHistoricalCrypto(BaseCryptoRequest):
-    def __init__(self, state: StateManager, config: CryptoConfig):
-        super().__init__(state, config)
-        self.interval = self.config.interval
-        self.since = self.config.since
-        self.limit = self.config.limit
+    def __init__(self, state: StateManager, params: RequestParams):
+        super().__init__(state, params)
 
     async def fetch_data(self):
-        """
-        Params:
-            save_path: Path
-            exchange_name: str
-            symbol: str
-            currency: str
-            interval: str
-            since: str
-            limit: int
-        """
-        exchange = getattr(ccxtpro, self.exchange_name)()
+        exchange = getattr(ccxtpro, self.params.exchange_name)()
         await temp_file_reset(self.save_path)
         try:
-            since_timestamp = int(datetime.strptime(self.since, "%d/%m/%Y").timestamp() * 1000)
+            since_timestamp = int(datetime.strptime(self.params.since, "%d/%m/%Y").timestamp() * 1000)
             batch = []
             while True:
                 logging.debug(
-                    f"Fetching historical data for {self.symbol}/{self.currency} starting from {self.since}")
+                    f"Fetching historical data for {self.params.symbol}/{self.params.currency} starting from {self.params.since}")
                 ohlcv = await exchange.fetch_ohlcv(
-                    f'{self.symbol}/{self.currency}',
-                    self.interval,
+                    f'{self.params.symbol}/{self.params.currency}',
+                    self.params.interval,
                     since=since_timestamp,
-                    limit=self.limit)
+                    limit=self.params.limit)
                 if not ohlcv:
                     break
                 batch.extend(ohlcv)

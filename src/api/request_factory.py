@@ -5,8 +5,7 @@ from src.api.request_stock import RequestLiveStock, RequestHistoricalStock
 from config.state_init import StateManager
 from utils.execution import TaskExecutor
 from typing import Union
-from config.api import CryptoConfig, StockConfig
-
+from config.api import CryptoConfig, StockConfig, RequestParams
 
 class RequestFactory:
     """
@@ -16,18 +15,32 @@ class RequestFactory:
         self.state = state
         self.exe = exe
         self.market_config = market_config
-        
-        self.market = state.api_config.market
-        self.mode = state.api_config.mode
 
     def create_market_request(self):
-        if self.market == 'crypto' and self.mode == 'live':
-            return RequestLiveCrypto(self.state, config=self.market_config).pipeline
-        elif self.market == 'crypto' and self.mode == 'historical':
-            return RequestHistoricalCrypto(self.state, config=self.market_config).pipeline
-        elif self.market == 'stock' and self.mode == 'live':
-            return RequestLiveStock(self.state, config=self.market_config).pipeline
-        elif self.market == 'stock' and self.mode == 'historical':
-            return RequestHistoricalStock(self.state, config=self.market_config).pipeline
+        params = RequestParams(
+            symbol=getattr(self.market_config, 'symbol', None),
+            interval=getattr(self.market_config, 'interval', None),
+            outputsize=getattr(self.market_config, 'outputsize', None),
+            function=getattr(self.market_config, 'function', None),
+            base_url=getattr(self.market_config, 'base_url', None),
+            exchange_name=getattr(self.market_config, 'exchange_name', None),
+            batch_size=getattr(self.market_config, 'batch_size', None),
+            max_items=getattr(self.market_config, 'max_items', None),
+            since=getattr(self.market_config, 'since', None),
+            limit=getattr(self.market_config, 'limit', None),
+            currency=getattr(self.market_config, 'currency', None),
+            apikey=self.market_config.auth_creds.get("stock_api_key")
+        )
+        params = {k: v for k, v in params.__dict__.items() if v is not None}
         
-        raise ValueError(f"Invalid market or mode: {self.market}, {self.mode}.")
+        request_map = {
+            ('crypto', 'live'): RequestLiveCrypto,
+            ('crypto', 'historical'): RequestHistoricalCrypto,
+            ('stock', 'live'): RequestLiveStock,
+            ('stock', 'historical'): RequestHistoricalStock
+        }
+        
+        request_class = request_map.get((self.market_config.market, self.market_config.mode))
+        if request_class:
+            return request_class(self.state, params).pipeline
+        raise ValueError(f"Invalid market or mode: {self.market_config.market}, {self.market_config.mode}.")

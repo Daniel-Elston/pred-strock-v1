@@ -13,8 +13,6 @@ class MainPipeline:
     def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
-        self.market_config = self.state.api_config.load_config()
-        self.db_stage = self.state.db_config.stage
         
         base_path = f'{state.api_config.symbol}_{state.api_config.mode}'
         self.extract_path = state.paths.get_path(base_path)
@@ -23,9 +21,9 @@ class MainPipeline:
     def run(self):
         """ETL pipeline main entry point."""
         steps = [
-            (RequestPipeline(self.state, self.exe, self.market_config).main, None, self.extract_path),
+            (RequestPipeline(self.state, self.exe).main, None, self.extract_path),
             (DataPipeline(self.state, self.exe).main, self.extract_path, self.transform_path),
-            (DatabasePipeline(self.state, self.exe, self.db_stage).load_fetch, self.transform_path, None),
+            (DatabasePipeline(self.state, self.exe).load_fetch, self.transform_path, None),
         ]
         self.exe._execute_steps(steps, stage="main")
 

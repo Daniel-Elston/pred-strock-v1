@@ -2,26 +2,22 @@ from __future__ import annotations
 import logging
 import asyncio
 from abc import ABC, abstractmethod
-from utils.file_access import save_json, temp_file_reset
+from utils.file_access import save_json
 from pathlib import Path
 from config.state_init import StateManager
 from utils.execution import TaskExecutor
 import aiohttp
-from typing import Union
-from config.api import CryptoConfig, StockConfig
+from config.api import RequestParams, CryptoConfig
 
 
 class BaseMarketRequest(ABC):
     """
     Base class for all market requests
     """
-    def __init__(self, state: StateManager, config: Union[CryptoConfig, StockConfig]):
-        self.state = state
-        self.config = config
-        self.symbol = state.api_config.symbol
-        self.mode = self.config.mode
-        self.save_path = state.paths.get_path(f'{self.config.symbol}_{self.config.mode}')
-
+    def __init__(self, state: StateManager, params: RequestParams):
+        self.params = params
+        self.save_path = state.paths.get_path(f'{state.api_config.symbol}_{state.api_config.mode}')
+    
     @abstractmethod
     async def fetch_data(self):
         """Abstract method to fetch data"""
@@ -43,10 +39,9 @@ class BaseCryptoRequest(BaseMarketRequest):
     """
     Base class for all crypto requests
     """
-    def __init__(self, state: StateManager, config: CryptoConfig):
-        super().__init__(state, config)
-        self.exchange_name = self.config.exchange_name
-        self.currency = self.config.currency
+    def __init__(self, state, params: RequestParams):
+        super().__init__(state, params)
+        self.params = CryptoConfig(**params)
 
     async def batch_save_helper(self, batch, path: Path):
         """Helper method to save batch data conditionally."""
@@ -59,31 +54,19 @@ class BaseStockRequest(BaseMarketRequest):
     """
     Base class for all stock requests
     """
-    def __init__(self, state: StateManager, config: StockConfig):
-        super().__init__(state, config)
-        self.api_key = self.config.auth_creds['stock_api_key']
-        self.base_url = self.config.base_url
-        self.function = self.config.function
-        self.outputsize = self.config.outputsize
-        self.interval = self.config.interval
+    def __init__(self, state, params: RequestParams):
+        super().__init__(state, params)
+        self.params = params
 
     async def perform_request(self):
         """
         Shared request logic for stock data.
         """
-        await temp_file_reset(self.save_path)
-        params = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
-            "function": self.function,
-            "outputsize": self.outputsize,
-            "interval": self.interval
-        }
+        base_url = self.params.pop('base_url')
         async with aiohttp.ClientSession() as session:
-            async with session.get(self.base_url, params=params) as response:
+            async with session.get(base_url, params=self.params) as response:
                 if response.status == 200:
                     data = await response.json()
                     await save_json(data, self.save_path)
-                    await session.close()
                 else:
                     logging.error(f"Failed fetch: {response.status}, {await response.text()}")
