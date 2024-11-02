@@ -7,16 +7,18 @@ from pathlib import Path
 from config.state_init import StateManager
 from utils.execution import TaskExecutor
 import aiohttp
-from config.api import RequestParams, CryptoConfig
+from typing import Union
+from config.api import CryptoConfig, StockConfig
 
 
 class BaseMarketRequest(ABC):
     """
     Base class for all market requests
     """
-    def __init__(self, state: StateManager, params: RequestParams):
+    def __init__(self, state: StateManager, params: Union[CryptoConfig, StockConfig]):
         self.params = params
-        self.save_path = state.paths.get_path(f'{state.api_config.symbol}_{state.api_config.mode}')
+        self.save_path = state.paths.get_path(
+            f'{state.api_config.symbol}_{state.api_config.mode}')
     
     @abstractmethod
     async def fetch_data(self):
@@ -39,9 +41,8 @@ class BaseCryptoRequest(BaseMarketRequest):
     """
     Base class for all crypto requests
     """
-    def __init__(self, state, params: RequestParams):
+    def __init__(self, state, params: CryptoConfig):
         super().__init__(state, params)
-        self.params = CryptoConfig(**params)
 
     async def batch_save_helper(self, batch, path: Path):
         """Helper method to save batch data conditionally."""
@@ -54,17 +55,15 @@ class BaseStockRequest(BaseMarketRequest):
     """
     Base class for all stock requests
     """
-    def __init__(self, state, params: RequestParams):
+    def __init__(self, state, params: StockConfig):
         super().__init__(state, params)
-        self.params = params
 
     async def perform_request(self):
         """
         Shared request logic for stock data.
         """
-        base_url = self.params.pop('base_url')
         async with aiohttp.ClientSession() as session:
-            async with session.get(base_url, params=self.params) as response:
+            async with session.get(self.params.base_url, params=self.params.__dict__) as response:
                 if response.status == 200:
                     data = await response.json()
                     await save_json(data, self.save_path)

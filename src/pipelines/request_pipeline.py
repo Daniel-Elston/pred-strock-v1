@@ -9,14 +9,14 @@ class RequestPipeline:
     def __init__(self, state: StateManager, exe: TaskExecutor):
         self.state = state
         self.exe = exe
-        self.market_config = state.api_config.load_config()
-        self.save_path = state.paths.get_path(f'{state.api_config.symbol}_{state.api_config.mode}')
+        self.save_path = state.paths.get_path(
+            f'{state.api_config.symbol}_{state.api_config.mode}')
 
     def main(self):
         """
         Main entry point for the pipeline.
         """
         steps = [
-            (RequestFactory(self.state, self.exe, self.market_config).create_market_request(), None, self.save_path),
+            (RequestFactory(self.state, self.exe), None, self.save_path),
         ]
         self.exe._execute_steps(steps, stage="parent")

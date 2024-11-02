@@ -3,11 +3,11 @@ from __future__ import annotations
 from config.state_init import StateManager
 
 from src.base.base_request import BaseStockRequest
-from config.api import RequestParams
+from config.api import StockConfig
 
 
 class RequestLiveStock(BaseStockRequest):
-    def __init__(self, state: StateManager, params: RequestParams):
+    def __init__(self, state: StateManager, params: StockConfig):
         super().__init__(state, params)
     
     async def fetch_data(self):
@@ -15,7 +15,7 @@ class RequestLiveStock(BaseStockRequest):
 
 
 class RequestHistoricalStock(BaseStockRequest):
-    def __init__(self, state: StateManager, params: RequestParams):
+    def __init__(self, state: StateManager, params: StockConfig):
         super().__init__(state, params)
     
     async def fetch_data(self):

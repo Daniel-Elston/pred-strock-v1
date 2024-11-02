@@ -7,13 +7,11 @@ from pathlib import Path
 from pprint import pformat
 from typing import Callable, List, Optional, Union
 
-
 def log_cls_methods(cls):
     for name, method in cls.__dict__.items():
         if callable(method):
             setattr(cls, name, log_step(view=True)(method))
     return cls
-
 
 def log_step(
     load_path: Optional[Union[str, Path]] = None,
@@ -25,17 +23,25 @@ def log_step(
     def decorator(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            script_name = func.__module__.split(".")[-1]
-            class_name = func.__qualname__.split(".")[0]
-            func_name = func.__name__
-            locate = f"`{script_name}.{class_name}.{func_name}`"
+            # Check if func has __qualname__; if not, use alternative naming
+            if hasattr(func, '__qualname__'):
+                script_name = func.__module__.split(".")[-1]
+                class_name = func.__qualname__.split(".")[0]
+                func_name = func.__name__
+                result = func(*args, **kwargs)
 
+            else:
+                # Fallback for callable instances
+                script_name = func.__module__.split(".")[-1]
+                class_name = type(func).__name__
+                func_name = "__call__"
+                result = ()
+
+            locate = f"`{script_name}.{class_name}.{func_name}`"
             logging.info(f"STARTING {locate} INITIATING")
             start_time = time.time()
 
             try:
-                result = func(*args, **kwargs)
-
                 log_details = {
                     "Load path": load_path if load_path or view or input else None,
                     "Save paths": save_paths if save_paths or view or output else None,
@@ -43,7 +49,6 @@ def log_step(
                     "Kwargs": kwargs if input or view else None,
                     "Result": result if output or view else None,
                 }
-
                 for key, value in log_details.items():
                     if value is not None:
                         if isinstance(value, (str, Path)):
@@ -52,7 +57,6 @@ def log_step(
                             logging.info(f"{key}:\n{pformat(value)}")
                         else:
                             logging.info(f"{key}:\n{pformat(value)}")
-
                 logging.info(f"COMPLETED {locate} SUCCESSFULLY\n")
                 return result
             except Exception as e:
@@ -61,7 +65,5 @@ def log_step(
             finally:
                 duration = time.time() - start_time
                 logging.debug(f"{locate} took {duration:.2f} seconds to execute")
-
         return wrapper
-
     return decorator
